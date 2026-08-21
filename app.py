@@ -69,7 +69,7 @@ def get_roi(source, force_select=False):
 
     Args:
         source: video source (0 or file path)
-        force_select: if True, always show selection window
+        force_select: if True, always show selection windows
 
     Returns:
         (x1, y1, x2, y2) ROI coordinates
