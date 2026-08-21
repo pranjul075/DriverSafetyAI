@@ -1,19 +1,7 @@
 # src/violation_manager.py
-# ─────────────────────────────────────────────
-# Violation Manager module
-#
-# This module handles the LOGIC of deciding
-# whether a real violation has occurred.
-#
-# It solves two problems:
-# 1. TEMPORAL CONFIRMATION — don't trigger on
-#    a single frame detection, wait for several
-#    seconds of continuous detection
-# 2. COOLDOWN — don't spam warnings repeatedly,
-#    wait before allowing another warning
-# ─────────────────────────────────────────────
 
 import time
+
 from config.config import (
     CLASS_PHONE,
     CLASS_SMOKER,
@@ -22,159 +10,280 @@ from config.config import (
     WARNING_COOLDOWN
 )
 
-# Violation state constants
-# These are the four possible states the system can be in
+
+# ─────────────────────────────────────────────
+# Violation states
+# ─────────────────────────────────────────────
+
 NORMAL = "NORMAL"
+
 PHONE_VIOLATION = "PHONE_VIOLATION"
+
 SMOKING_VIOLATION = "SMOKING_VIOLATION"
+
 SEATBELT_VIOLATION = "SEATBELT_VIOLATION"
-PHONE_SMOKING_VIOLATION = "PHONE_SMOKING_VIOLATION"
-PHONE_SEATBELT_VIOLATION = "PHONE_SEATBELT_VIOLATION"
-SMOKING_SEATBELT_VIOLATION = "SMOKING_SEATBELT_VIOLATION"
+
+PHONE_SMOKING_VIOLATION = \
+    "PHONE_SMOKING_VIOLATION"
+
+PHONE_SEATBELT_VIOLATION = \
+    "PHONE_SEATBELT_VIOLATION"
+
+SMOKING_SEATBELT_VIOLATION = \
+    "SMOKING_SEATBELT_VIOLATION"
+
 ALL_VIOLATION = "ALL_VIOLATION"
 
 
 class ViolationManager:
-    """
-    Tracks detections over time and decides when
-    a real violation has been confirmed.
-
-    Key concepts:
-    - detection_start_time: when did we FIRST see this detection?
-    - If detection is continuous for CONFIRMATION_TIME seconds → violation
-    - If detection disappears → reset the timer
-    - After warning plays → cooldown period before next warning
-    """
 
     def __init__(self):
-        # Track when each class was FIRST continuously detected
-        # Key: class_id, Value: timestamp when detection started
+
+        # When each detection started
         self.detection_start = {
+
             CLASS_PHONE: None,
+
             CLASS_SMOKER: None,
-            CLASS_SEATBELT: None,
+
+            CLASS_SEATBELT: None
         }
 
-        # Track which classes are currently confirmed violations
+        # Whether each detection has been
+        # continuously confirmed
         self.confirmed = {
+
             CLASS_PHONE: False,
+
             CLASS_SMOKER: False,
-            CLASS_SEATBELT: False,
+
+            CLASS_SEATBELT: False
         }
 
-        # Track when the last warning was played (for cooldown)
+        # Last time audio warning played
         self.last_warning_time = 0
 
-        # Current violation state
+        # Current state
         self.current_state = NORMAL
 
-        print("ViolationManager initialized")
-        print(f"  Confirmation time: {CONFIRMATION_TIME}s")
-        print(f"  Warning cooldown: {WARNING_COOLDOWN}s")
+        print(
+            "ViolationManager initialized"
+        )
 
-    def update(self, driver_detections, vehicle_moving):
-        """
-        Update violation state based on current detections.
+        print(
+            f"  Confirmation time: "
+            f"{CONFIRMATION_TIME}s"
+        )
 
-        Called every frame with the list of detections
-        that are inside the Driver ROI.
+        print(
+            f"  Warning cooldown: "
+            f"{WARNING_COOLDOWN}s"
+        )
 
-        Args:
-            driver_detections: list of Detection objects inside ROI
-            vehicle_moving: bool — is the vehicle moving?
+    # ─────────────────────────────────────────
+    # Main update function
+    # ─────────────────────────────────────────
 
-        Returns:
-            current_state: one of the violation state constants
-            should_warn: bool — should audio warning play now?
-        """
+    def update(
+        self,
+        driver_detections,
+        vehicle_moving
+    ):
+
         now = time.time()
 
-        # Get the set of class IDs currently detected in this frame
-        detected_classes = {d.class_id for d in driver_detections}
+        # Get classes detected in current frame
+        detected_classes = {
+            d.class_id
+            for d in driver_detections
+        }
 
-        # ── TEMPORAL CONFIRMATION LOGIC ────────────────
-        for class_id in [CLASS_PHONE, CLASS_SMOKER, CLASS_SEATBELT]:
+        # ─────────────────────────────────────
+        # TEMPORAL CONFIRMATION
+        # ─────────────────────────────────────
 
+        for class_id in [
+            CLASS_PHONE,
+            CLASS_SMOKER,
+            CLASS_SEATBELT
+        ]:
+
+            # Detection exists
             if class_id in detected_classes:
-                # This class IS detected in this frame
 
-                if self.detection_start[class_id] is None:
-                    # First time we're seeing this — start the timer
-                    self.detection_start[class_id] = now
+                # Start timer
+                if (
+                    self.detection_start[class_id]
+                    is None
+                ):
 
-                # How long has this been continuously detected?
-                elapsed = now - self.detection_start[class_id]
+                    self.detection_start[
+                        class_id
+                    ] = now
 
-                # If detected for long enough → confirmed violation
+                # Calculate detection duration
+                elapsed = (
+                    now
+                    - self.detection_start[class_id]
+                )
+
+                # Confirm after required time
                 if elapsed >= CONFIRMATION_TIME:
-                    self.confirmed[class_id] = True
 
+                    self.confirmed[
+                        class_id
+                    ] = True
+
+            # Detection disappeared
             else:
-                # This class is NOT detected in this frame
-                # Reset the timer — detection was not continuous
-                self.detection_start[class_id] = None
-                self.confirmed[class_id] = False
 
-        # ── DETERMINE VIOLATION STATE ──────────────────
-        # Only trigger violations if vehicle is MOVING
-        # (or if seatbelt is missing — that matters even when stopped)
-        phone = self.confirmed[CLASS_PHONE] and vehicle_moving
-        smoke = self.confirmed[CLASS_SMOKER] and vehicle_moving
-        belt = self.confirmed[CLASS_SEATBELT]  # seatbelt always matters
+                self.detection_start[
+                    class_id
+                ] = None
 
-        # Determine combined state
+                self.confirmed[
+                    class_id
+                ] = False
+
+        # ─────────────────────────────────────
+        # DETERMINE ACTIVE VIOLATIONS
+        # ─────────────────────────────────────
+
+        phone = (
+            self.confirmed[CLASS_PHONE]
+            and vehicle_moving
+        )
+
+        smoke = (
+            self.confirmed[CLASS_SMOKER]
+            and vehicle_moving
+        )
+
+        belt = (
+            self.confirmed[CLASS_SEATBELT]
+        )
+
+        # ─────────────────────────────────────
+        # DETERMINE COMBINED STATE
+        # ─────────────────────────────────────
+
         if phone and smoke and belt:
+
             self.current_state = ALL_VIOLATION
+
         elif phone and smoke:
-            self.current_state = PHONE_SMOKING_VIOLATION
+
+            self.current_state = \
+                PHONE_SMOKING_VIOLATION
+
         elif phone and belt:
-            self.current_state = PHONE_SEATBELT_VIOLATION
+
+            self.current_state = \
+                PHONE_SEATBELT_VIOLATION
+
         elif smoke and belt:
-            self.current_state = SMOKING_SEATBELT_VIOLATION
+
+            self.current_state = \
+                SMOKING_SEATBELT_VIOLATION
+
         elif phone:
-            self.current_state = PHONE_VIOLATION
+
+            self.current_state = \
+                PHONE_VIOLATION
+
         elif smoke:
-            self.current_state = SMOKING_VIOLATION
+
+            self.current_state = \
+                SMOKING_VIOLATION
+
         elif belt:
-            self.current_state = SEATBELT_VIOLATION
+
+            self.current_state = \
+                SEATBELT_VIOLATION
+
         else:
+
             self.current_state = NORMAL
 
-        # ── COOLDOWN CHECK ─────────────────────────────
-        # Should we play a warning sound right now?
+        # ─────────────────────────────────────
+        # AUDIO WARNING
+        # ─────────────────────────────────────
+
         should_warn = False
 
         if self.current_state != NORMAL:
-            # Only warn if cooldown period has passed
-            time_since_last = now - self.last_warning_time
 
-            if time_since_last >= WARNING_COOLDOWN:
+            # Time since previous warning
+            time_since_warning = (
+                now - self.last_warning_time
+            )
+
+            # First warning OR cooldown expired
+            if (
+                self.last_warning_time == 0
+                or
+                time_since_warning >= WARNING_COOLDOWN
+            ):
+
                 should_warn = True
+
                 self.last_warning_time = now
 
-        return self.current_state, should_warn
+        else:
 
-    def get_confirmation_progress(self, class_id):
-        """
-        Returns how close a detection is to being confirmed.
-        Useful for displaying a progress indicator.
+            # No violation.
+            # Reset timer so a new violation
+            # can warn immediately.
+            self.last_warning_time = 0
 
-        Returns:
-            Float between 0.0 and 1.0
-            0.0 = just started detecting
-            1.0 = fully confirmed violation
-        """
-        if self.detection_start[class_id] is None:
+        return (
+            self.current_state,
+            should_warn
+        )
+
+    # ─────────────────────────────────────────
+    # Confirmation progress
+    # ─────────────────────────────────────────
+
+    def get_confirmation_progress(
+        self,
+        class_id
+    ):
+
+        start = self.detection_start[class_id]
+
+        if start is None:
+
             return 0.0
 
-        elapsed = time.time() - self.detection_start[class_id]
-        progress = min(elapsed / CONFIRMATION_TIME, 1.0)
-        return progress
+        elapsed = time.time() - start
+
+        if CONFIRMATION_TIME <= 0:
+
+            return 1.0
+
+        progress = (
+            elapsed / CONFIRMATION_TIME
+        )
+
+        return min(progress, 1.0)
+
+    # ─────────────────────────────────────────
+    # Reset
+    # ─────────────────────────────────────────
 
     def reset(self):
-        """Reset all violation state — call when video source changes."""
+
         for class_id in self.detection_start:
-            self.detection_start[class_id] = None
-            self.confirmed[class_id] = False
+
+            self.detection_start[
+                class_id
+            ] = None
+
+            self.confirmed[
+                class_id
+            ] = False
+
         self.current_state = NORMAL
+
         self.last_warning_time = 0

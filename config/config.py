@@ -46,7 +46,7 @@ CONFIRMATION_TIME = 2.0  # seconds
 # ── AUDIO WARNING ──────────────────────────────
 # After a warning plays, wait this many seconds before
 # allowing another warning — prevents non-stop beeping
-WARNING_COOLDOWN = 5.0  # seconds
+WARNING_COOLDOWN = 1.0  # seconds
 
 # Path to warning sound file
 AUDIO_WARNING_PATH = os.path.join("audio", "warning.wav")
