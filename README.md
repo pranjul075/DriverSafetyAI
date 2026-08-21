@@ -8,7 +8,7 @@ The system supports real-time webcam and video-file input and can detect smoking
 
 ⸻
 
-✨ Features
+ Features
 
 *  Mobile Phone Detection
 *  Smoking Detection
