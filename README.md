@@ -10,15 +10,20 @@ DriverSafetyAI is an AI-powered real-time driver monitoring system that detects 
 
 ```mermaid
 flowchart TD
-    A[Webcam / Video File] --> B[OpenCV Frame Capture]
-    B --> C[YOLO11 Object Detection]
-    C --> D[Confidence Filtering]
-    D --> E[Vehicle Motion Detection]
-    E --> F[Temporal Violation Confirmation]
-    F --> G[Violation State Detection]
-    G --> H[Live Visualization]
+    A[OpenCV Frame Capture] --> B[YOLO11 Detection]
+    A --> C[Motion Detector]
+
+    B --> D[Confidence Filter]
+
+    D --> E[Violation Manager]
+    C --> E
+
+    E --> F[Temporal Confirmation]
+    F --> G[Violation State]
+
+    G --> H[Visualization]
     G --> I[Audio Alert]
-    G --> J[System Status]
+    G --> J[Status]
 ```
 
 The system does not trigger on a single frame. A violation must persist continuously for the confirmation period before an alert fires. This eliminates false alarms from momentary or unstable detections.
