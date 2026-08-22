@@ -11,9 +11,9 @@ from config.config import (
 )
 
 
-# ─────────────────────────────────────────────
+
 # Violation states
-# ─────────────────────────────────────────────
+
 
 NORMAL = "NORMAL"
 
@@ -80,9 +80,8 @@ class ViolationManager:
             f"{WARNING_COOLDOWN}s"
         )
 
-    # ─────────────────────────────────────────
     # Main update function
-    # ─────────────────────────────────────────
+    
 
     def update(
         self,
@@ -98,9 +97,9 @@ class ViolationManager:
             for d in driver_detections
         }
 
-        # ─────────────────────────────────────
+
         # TEMPORAL CONFIRMATION
-        # ─────────────────────────────────────
+
 
         for class_id in [
             CLASS_PHONE,
@@ -145,9 +144,9 @@ class ViolationManager:
                     class_id
                 ] = False
 
-        # ─────────────────────────────────────
+
         # DETERMINE ACTIVE VIOLATIONS
-        # ─────────────────────────────────────
+
 
         phone = (
             self.confirmed[CLASS_PHONE]
@@ -163,9 +162,9 @@ class ViolationManager:
             self.confirmed[CLASS_SEATBELT]
         )
 
-        # ─────────────────────────────────────
+
         # DETERMINE COMBINED STATE
-        # ─────────────────────────────────────
+
 
         if phone and smoke and belt:
 
@@ -205,9 +204,9 @@ class ViolationManager:
 
             self.current_state = NORMAL
 
-        # ─────────────────────────────────────
+
         # AUDIO WARNING
-        # ─────────────────────────────────────
+
 
         should_warn = False
 
@@ -241,9 +240,9 @@ class ViolationManager:
             should_warn
         )
 
-    # ─────────────────────────────────────────
+
     # Confirmation progress
-    # ─────────────────────────────────────────
+
 
     def get_confirmation_progress(
         self,
@@ -268,9 +267,9 @@ class ViolationManager:
 
         return min(progress, 1.0)
 
-    # ─────────────────────────────────────────
+
     # Reset
-    # ─────────────────────────────────────────
+
 
     def reset(self):
 
