@@ -1,15 +1,3 @@
-# src/detector.py
-# ─────────────────────────────────────────────
-# DriverSafetyAI — YOLO Detection
-#
-# Detects:
-#   Class 0 → Phone
-#   Class 1 → Smoker
-#   Class 2 → Seatbelt
-#
-# Driver ROI has been removed.
-# ─────────────────────────────────────────────
-
 from ultralytics import YOLO
 
 from config.config import (
