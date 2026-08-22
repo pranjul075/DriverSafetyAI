@@ -32,16 +32,19 @@ The system does not trigger on a single frame. A violation must persist continuo
 
 ## Features
 
-- 📱 Mobile phone detection while driving
-- 🚬 Smoking detection while driving
-- 🪑 Seatbelt violation detection
-- 🎥 Real-time webcam and video file support
-- ⏱️ Temporal violation confirmation — no single-frame false alarms
-- 🚗 Vehicle motion detection via optical flow
-- 🔊 Non-blocking threaded audio warnings
-- ⚠️ 7 combined violation states
-- 🧩 Modular Python architecture
-- ⚙️ Central configuration file
+*  Mobile Phone Detection — Detects phone usage while driving
+*  Smoking Detection — Detects smoking-related behavior while driving
+*  Seatbelt Detection — Detects seatbelt violations
+*  Real-Time Webcam & Video Support — Works with live camera feeds and video files
+*  YOLO11 Object Detection — Real-time object detection using a trained YOLO11 model
+*  Temporal Violation Confirmation — Requires a detection to persist before confirming a violation
+*  Vehicle Motion Detection — Uses optical-flow-based motion analysis to determine vehicle movement
+*  Real-Time Audio Alerts — Plays warning sounds for confirmed violations
+*  Violation State Management — Supports individual and combined violation states
+*  False-Positive Reduction — Uses confidence filtering, temporal confirmation, and warning cooldowns
+*  Live Detection Visualization — Displays bounding boxes, labels, confidence scores, and system status
+*  Centralized Configuration — Detection and system parameters are managed through config/config.py
+*  Modular Python Architecture — Detection, motion analysis, violation management, audio, and visualization are separated into       independent modules
 
 ---
 
