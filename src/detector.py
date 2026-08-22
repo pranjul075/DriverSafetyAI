@@ -79,7 +79,7 @@ class Detector:
         results = self.model(
             frame,
             conf=CONFIDENCE_THRESHOLD,
-            verbose=False,persist=True
+            verbose=False
         )
 
         for result in results:
