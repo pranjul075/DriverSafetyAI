@@ -1,12 +1,14 @@
-from ultralytics import YOLO  # type: ignore[import-not-found]
+from ultralytics import YOLO
 
-# Load a pre-trained YOLO model
 model = YOLO("yolo11n.pt")
 
-# Train the model
 model.train(
-    data="combined_dataset/data.yaml",
-    epochs=50,
+    data="dms_combined/data.yaml",
+    epochs=100,
     imgsz=640,
-    batch=16
+    batch=16,
+    device=0,
+    project="runs/detect",
+    name="driver_safety",
+    patience=20
 )
