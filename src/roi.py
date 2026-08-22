@@ -1,13 +1,4 @@
-# src/roi.py
-# ─────────────────────────────────────────────
-# Driver Region of Interest (ROI) module
-# 
-# The camera is inside the car, so both the driver
-# and passengers are visible. We use a rectangular
-# ROI to define where the DRIVER sits in the frame.
-# Only detections inside this ROI are treated as
-# driver violations.
-# ─────────────────────────────────────────────
+
 
 import cv2
 import json
