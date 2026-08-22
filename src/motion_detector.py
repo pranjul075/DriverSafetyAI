@@ -1,11 +1,3 @@
-# src/motion_detector.py
-# ─────────────────────────────────────────────
-# Vehicle Motion Detection module
-#
-# We estimate whether the vehicle is moving by
-# analyzing pixel movement between video frames
-# using Optical Flow.
-#
 # IMPORTANT LIMITATION:
 # This is camera-based motion estimation — NOT
 # a real speedometer. It can be fooled by:
@@ -17,7 +9,7 @@
 # In a real automotive system, this would be
 # replaced by GPS speed or OBD-II vehicle speed.
 # The design here makes that swap easy to do.
-# ─────────────────────────────────────────────
+
 
 import cv2
 import numpy as np
@@ -135,16 +127,4 @@ class MotionDetector:
         self.is_moving = False
         self.current_motion_score = 0.0
 
-    # ── FUTURE EXTENSION ───────────────────────
-    # To replace camera-based motion with GPS or OBD-II speed:
-    #
-    # def update_from_gps(self, speed_kmh):
-    #     self.is_moving = speed_kmh > 5.0
-    #     return self.is_moving
-    #
-    # def update_from_obd(self, vehicle_speed):
-    #     self.is_moving = vehicle_speed > 0
-    #     return self.is_moving
-    #
-    # The rest of the pipeline doesn't change at all —
-    # only this module needs to be swapped out.
+   
