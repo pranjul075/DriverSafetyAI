@@ -13,8 +13,8 @@ MODEL_PATH = os.path.join("models", "best.pt")
 
 # Minimum confidence score to accept a YOLO detection
 # 0.0 = accept everything, 1.0 = only perfect detections
-# 0.6 is a good starting point — raise it if too many false alarms
-CONFIDENCE_THRESHOLD = 0.60
+# 0.70 is a good starting point — raise it if too many false alarms
+CONFIDENCE_THRESHOLD = 0.70
 
 # ── CLASS IDs ──────────────────────────────────
 # Must match what your model was trained on
