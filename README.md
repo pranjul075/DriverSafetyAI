@@ -1,414 +1,286 @@
-DriverSafetyAI
+# DriverSafetyAI 🚗
 
-Real-Time AI Driver Safety & Violation Detection System
+> Real-Time AI Driver Safety & Violation Detection System
 
-DriverSafetyAI is an AI-powered real-time driver monitoring system that uses YOLO object detection, computer vision, temporal violation confirmation, vehicle-motion detection, and audio alerts to identify unsafe driving behaviors.
+DriverSafetyAI is an AI-powered real-time driver monitoring system that detects unsafe driving behaviors using YOLO11, OpenCV, and Python. It identifies phone usage, smoking, and seatbelt violations with temporal confirmation logic — eliminating false alarms from single-frame detections — and triggers real-time audio warnings.
 
-The system supports real-time webcam and video-file input and can detect smoking, mobile phone usage, and seatbelt violations.
+---
 
-⸻
+## How It Works
 
- Features
+```mermaid
+flowchart TD
+    A[Webcam / Video File] --> B[OpenCV Frame Capture]
+    B --> C[YOLO11 Object Detection]
+    C --> D[Confidence Filtering]
+    D --> E[Vehicle Motion Detection]
+    E --> F[Temporal Violation Confirmation]
+    F --> G[Violation State Detection]
+    G --> H[Live Visualization]
+    G --> I[Audio Alert]
+    G --> J[System Status]
+```
 
-*  Mobile Phone Detection
-*  Smoking Detection
-*  Seatbelt Detection
-*  Real-Time Webcam Detection
-*  Video File Support
-*  YOLO-based Object Detection
-*  Temporal Violation Confirmation
-*  Vehicle Motion Detection
-*  Real-Time Audio Warnings
-*  Configurable Confidence Threshold
-*  Warning Cooldown System
-*  Live Detection Visualization
-*  Modular Python Architecture
+The system does not trigger on a single frame. A violation must persist continuously for the confirmation period before an alert fires. This eliminates false alarms from momentary or unstable detections.
 
-⸻
+---
 
- How It Works
+## Features
 
-Webcam / Video
-      ↓
-OpenCV Frame Capture
-      ↓
-YOLO Object Detection
-      ↓
-Confidence Filtering
-      ↓
-Driver Detection Analysis
-      ↓
-Vehicle Motion Detection
-      ↓
-Temporal Violation Confirmation
-      ↓
-Violation State Detection
-      ↓
- ┌───────────────┬────────────────┐
- │               │                │
- ▼               ▼                ▼
-Visualization   Audio Alert    Status
+- 📱 Mobile phone detection while driving
+- 🚬 Smoking detection while driving
+- 🪑 Seatbelt violation detection
+- 🎥 Real-time webcam and video file support
+- ⏱️ Temporal violation confirmation — no single-frame false alarms
+- 🚗 Vehicle motion detection via optical flow
+- 🔊 Non-blocking threaded audio warnings
+- ⚠️ 7 combined violation states
+- 🧩 Modular Python architecture
+- ⚙️ Central configuration file
 
-The system does not immediately trigger an alarm from a single-frame prediction. A detected violation must remain present for the configured confirmation period before it is considered a confirmed violation.
+---
 
-This helps reduce false alarms caused by temporary or incorrect detections.
+## Violation States
 
-⸻
+The system handles individual and combined violations simultaneously:
 
- Detected Violations
+| State | Trigger |
+|-------|---------|
+| NORMAL | No violations detected |
+| PHONE_VIOLATION | Phone detected while driving |
+| SMOKING_VIOLATION | Smoking detected while driving |
+| SEATBELT_VIOLATION | No seatbelt detected |
+| PHONE_SMOKING_VIOLATION | Phone + smoking simultaneously |
+| PHONE_SEATBELT_VIOLATION | Phone detected + no seatbelt |
+| SMOKING_SEATBELT_VIOLATION | Smoking detected + no seatbelt |
+| ALL_VIOLATION | Phone + smoking + no seatbelt |
 
-The system supports individual and combined violation states:
+---
 
-NORMAL
-PHONE_VIOLATION
-SMOKING_VIOLATION
-SEATBELT_VIOLATION
-PHONE_SMOKING_VIOLATION
-PHONE_SEATBELT_VIOLATION
-SMOKING_SEATBELT_VIOLATION
-ALL_VIOLATION
+## Model Performance
 
-⸻
+Trained on the **DMS (Driver Monitoring System)** dataset using YOLO11n with transfer learning.
 
-🔊 Audio Alert System
+**Dataset:**
 
-DriverSafetyAI uses Pygame for audio warnings.
+| Split | Images |
+|-------|--------|
+| Train | 5,957 |
+| Valid | 2,389 |
+| Test | 1,538 |
+| **Total** | **9,884** |
 
-Example alerts include:
+**Results after 100 epochs:**
 
-Phone detected while driving!
-Smoking detected while driving!
-Seatbelt not detected!
-Phone AND smoking detected!
+| Class | Precision | Recall | mAP50 | mAP50-95 |
+|-------|-----------|--------|-------|----------|
+| Phone | 0.853 | 0.845 | 0.891 | 0.671 |
+| Smoker | 0.890 | 0.819 | 0.887 | 0.557 |
+| **Overall** | **0.871** | **0.832** | **0.889** | **0.614** |
 
-Audio playback runs independently from the main video-processing loop so that warning sounds do not unnecessarily block the real-time camera feed.
+The model was fine-tuned with hard-negative examples (pens, wires, fingers, caps) to reduce false positives on cigarette-like objects.
 
-⸻
+---
 
-🛡️ False Positive Reduction
+## False Positive Reduction
 
-Real-world object detection can produce false positives. DriverSafetyAI therefore combines YOLO predictions with application-level decision logic.
+```mermaid
+flowchart LR
+    A[Object Detected] --> B{Confidence Check}
+    B -->|Below Threshold| C[Ignore]
+    B -->|Above Threshold| D[Track Detection]
+    D --> E{Persists for Confirmation Time?}
+    E -->|No| C
+    E -->|Yes| F[Violation Confirmed]
+    F --> G{Cooldown Active?}
+    G -->|Yes| H[Continue Monitoring]
+    G -->|No| I[Audio Warning]
+```
 
-For example:
+Temporal confirmation + confidence threshold + hard-negative fine-tuning work together to minimize false alarms without missing real violations.
 
-Object detected
-      ↓
-Confidence check
-      ↓
-Detection persists
-      ↓
-Confirmation timer
-      ↓
-Violation confirmed
-      ↓
-Audio warning
+---
+## Model Improvement Pipeline
 
-The system also uses a configurable warning cooldown to prevent repeated audio alerts from becoming excessive.
+The model went through multiple rounds of targeted fine-tuning to improve real-world performance:
 
-For difficult false positives, such as a pen being classified as smoking, the model can be improved using hard-negative examples and additional fine-tuning.
+**Round 1 — Base Training**
+- Trained YOLO11n on DMS dataset (5,957 images, 100 epochs)
+- Good overall performance but some false positives on cigarette-like objects
 
-⸻
+**Round 2 — Hard Negative Fine-tuning**
+- Added negative examples: pens, fingers, wires, bottle caps
+- Reduced false positives on non-smoking objects
+- Model: `best_finetuned_pen_fix.pt`
 
-🧰 Tech Stack
+**Round 3 — Hard Positive Fine-tuning (Current)**
+- Added 100 difficult smoking examples: burning cigarettes, faint smoke, partial occlusion
+- Fine-tuned from `best_finetuned_pen_fix.pt` (not from scratch)
+- ~10 epochs only — preserves existing knowledge, adds difficult cases
+- Goal: detect low-smoke and partially visible cigarettes without reintroducing false positives
 
-Technology	Purpose
-Python 3.11	Core application
-YOLO / Ultralytics	Object detection
-OpenCV	Computer vision and video processing
-PyGame	Audio alerts
-NumPy	Numerical processing
-Git / GitHub	Version control
+**Why fine-tune instead of retrain?**
+Fine-tuning from an existing checkpoint is faster and safer than full retraining. The model already knows phone and seatbelt well — we only need to improve difficult smoking detection. Starting from scratch would risk losing that existing knowledge.
 
-⸻
+## Tech Stack
 
-📁 Project Structure
+| Technology | Purpose |
+|------------|---------|
+| Python 3.11 | Core application |
+| YOLO11 / Ultralytics | Object detection |
+| PyTorch | Deep learning backend |
+| OpenCV | Video processing + optical flow |
+| Pygame | Non-blocking audio alerts |
+| NumPy | Numerical processing |
 
+---
+
+## Project Structure
+
+```
 DriverSafetyAI/
 │
-├── app.py
-├── train.py
-├── requirements.txt
-├── README.md
-├── .gitignore
+├── app.py                    # Main application entry point
+├── train.py                  # YOLO training pipeline
+├── requirements.txt          # Python dependencies
+├── README.md                 # Project documentation
+├── .gitignore                # Ignored files and directories
 │
 ├── config/
-│   └── config.py
+│   └── config.py             # Centralized system configuration
 │
 ├── src/
 │   ├── __init__.py
-│   ├── detector.py
-│   ├── motion_detector.py
-│   ├── violation_manager.py
-│   ├── audio_alert.py
-│   ├── visualization.py
-│   └── roi.py
+│   ├── detector.py           # YOLO inference and confidence filtering
+│   ├── motion_detector.py    # Vehicle motion detection via optical flow
+│   ├── violation_manager.py  # Temporal confirmation and violation states
+│   ├── audio_alert.py        # Non-blocking threaded audio warnings
+│   ├── visualization.py      # Bounding boxes and status overlays
+│   └── roi.py                # Driver region-of-interest processing
 │
 ├── audio/
-│   └── warning.wav
+│   └── warning.wav           # Auto-generated warning sound
 │
 └── models/
-    └── best.pt
+    └── best.pt               # Trained YOLO11n weights
+```
 
-Note: The trained model and large datasets are not stored directly in the normal Git repository. The source code and training pipeline are included, while large ML assets can be distributed separately.
+---
 
-⸻
+## Installation
 
- Installation
-
-1. Clone the Repository
-
+```bash
+# 1. Clone
 git clone https://github.com/pranjul075/DriverSafetyAI.git
 cd DriverSafetyAI
 
-2. Create a Python 3.11 Environment
-
+# 2. Create environment
 python3.11 -m venv venv
+source venv/bin/activate        # macOS/Linux
+venv\Scripts\activate           # Windows
 
-Activate it on macOS/Linux:
-
-source venv/bin/activate
-
-Windows:
-
-venv\Scripts\activate
-
-3. Install Dependencies
-
+# 3. Install dependencies
 pip install -r requirements.txt
 
-⸻
+# 4. Add trained model
+# Place best.pt inside models/
+```
 
-🤖 Model Setup
-
-The application uses a trained YOLO model located at:
-
-models/best.pt
-
-If the model is distributed separately, download it and place it inside the models directory:
-
-DriverSafetyAI/
-└── models/
-    └── best.pt
-
-The trained model contains the following classes:
-
+**Model classes:**
 0 → smoking
 1 → phone
 2 → seatbelt
 
-Large trained models and datasets are intentionally excluded from normal Git commits to keep the repository lightweight.
+---
 
-⸻
+## Run
 
-▶ Run the Application
-
-Webcam
-
+```bash
+# Webcam
 python3.11 app.py --source 0
 
-Video File
-
+# Video file
 python3.11 app.py --source driving.mp4
+```
 
-⸻
+**Controls:**
 
-⌨️ Controls
+| Key | Action |
+|-----|--------|
+| Q | Quit |
+| SPACE | Pause / Resume |
 
-Key	Action
-Q	Quit application
-SPACE	Pause / Resume
+---
 
-⸻
+## Configuration
 
- Configuration
+All parameters are centralized in `config/config.py`:
 
-System parameters are centralized in:
+```python
+CONFIDENCE_THRESHOLD = 0.80   # Minimum YOLO confidence
+CONFIRMATION_TIME    = 2.0    # Seconds before violation confirmed
+WARNING_COOLDOWN     = 1.0    # Seconds between audio warnings
+MOTION_THRESHOLD     = 2.0    # Optical flow sensitivity
+```
 
-config/config.py
+---
 
-Important parameters include:
+## Architecture Highlights
 
-CONFIDENCE_THRESHOLD = 0.80
-CONFIRMATION_TIME = 2.0
-WARNING_COOLDOWN = 1.0
+**Temporal Confirmation** — detections must persist continuously for `CONFIRMATION_TIME` seconds. If the detection disappears even briefly, the timer resets. This is the core mechanism that separates a robust safety system from a naive single-frame detector.
 
-Confidence Threshold
+**Modular Design** — each component is independent. The motion detector can be swapped from optical flow to GPS or OBD-II speed with zero changes to other modules.
 
-Controls the minimum YOLO confidence required for a detection.
+**Non-blocking Audio** — warnings run in daemon threads so audio never blocks the video pipeline.
 
-Higher values generally reduce weak detections but may also cause valid detections to be missed.
+**Vehicle Motion Detection** — Dense Optical Flow (Farneback algorithm) estimates vehicle movement. Phone and smoking violations only trigger when moving. Seatbelt violations trigger regardless.
 
-Confirmation Time
+---
 
-Controls how long a detection must remain continuously present before becoming a confirmed violation.
+## Limitations
 
-Warning Cooldown
+- Camera-based motion estimation can be affected by lighting changes, camera shake, or other moving objects
+- Low lighting reduces detection accuracy
+- This is a **computer vision research prototype** — not a certified automotive safety system
+- In production, vehicle motion should use GPS or OBD-II speed data
 
-Controls how frequently the audio warning can be triggered while a violation remains active.
+---
 
-⸻
+## Future Extensions
 
-🧩 Project Architecture
+- Head pose estimation for distraction detection
+- Eye state monitoring for drowsiness detection
+- GPS / OBD-II speed integration
+- Embedded deployment on NVIDIA Jetson
+- Multi-camera support for wider coverage
 
-app.py
+---
 
-Main application entry point.
+## Key Learnings
 
-Connects:
+- Dataset quality matters more than model complexity
+- Hard-negative fine-tuning is more effective than simply raising confidence threshold
+- Temporal confirmation significantly reduces real-world false alarms
+- Modular architecture makes AI systems easier to debug and extend
+- Real-world testing reveals failure cases that benchmark metrics miss
 
-* YOLO detector
-* Motion detector
-* Violation manager
-* Audio alert system
-* Visualization
+---
 
-src/detector.py
+## Project Status
 
-Responsible for:
+| Feature | Status |
+|---------|--------|
+| Phone detection | ✅ Complete |
+| Smoking detection | ✅ Complete |
+| Seatbelt detection | ✅ Complete |
+| Temporal confirmation | ✅ Complete |
+| Vehicle motion detection | ✅ Complete |
+| Audio warnings | ✅ Complete |
+| Combined violations | ✅ Complete |
+| Hard-negative fine-tuning | ✅ Complete |
 
-* Loading the trained YOLO model
-* Running inference
-* Extracting bounding boxes
-* Extracting class IDs
-* Applying confidence filtering
+---
 
-src/violation_manager.py
+**GitHub:** https://github.com/pranjul75/DriverSafetyAI
 
-Responsible for:
-
-* Tracking detections over time
-* Temporal confirmation
-* Violation state management
-* Combined violation detection
-* Warning cooldown
-
-src/motion_detector.py
-
-Analyzes frame changes to determine whether the vehicle appears to be moving.
-
-src/audio_alert.py
-
-Responsible for:
-
-* Loading the warning sound
-* Playing audio alerts
-* Handling audio playback without blocking the main processing loop
-
-src/visualization.py
-
-Responsible for:
-
-* Bounding boxes
-* Status information
-* Warning banners
-* Detection visualization
-
-config/config.py
-
-Central configuration for:
-
-* Model path
-* Detection classes
-* Confidence threshold
-* Confirmation time
-* Warning cooldown
-* Display settings
-
-⸻
-
-🧪 Model Training
-
-The project includes training utilities in:
-
-train.py
-
-The model can be trained using a YOLO-compatible dataset containing:
-
-dataset/
-├── train/
-│   ├── images/
-│   └── labels/
-│
-├── valid/
-│   ├── images/
-│   └── labels/
-│
-├── test/
-│   ├── images/
-│   └── labels/
-│
-└── data.yaml
-
-For improving false positives, additional negative and hard-negative examples can be introduced during fine-tuning.
-
-For example, if a pen is incorrectly classified as smoking, images containing pens without smoking objects can be added as negative training examples.
-
-⸻
-
- Improving the Model
-
-Possible improvements include:
-
-* Adding hard-negative examples
-* Adding more real-world driver images
-* Increasing dataset diversity
-* Improving camera-angle coverage
-* Testing different confidence thresholds
-* Fine-tuning the existing trained model
-* Adding object tracking
-* Improving temporal filtering
-* Evaluating precision and recall
-
-The goal is to improve real-world robustness rather than simply increasing the confidence threshold.
-
-⸻
-
-💡 Engineering Highlights
-
-DriverSafetyAI combines machine-learning inference with traditional application logic.
-
-Real-Time Processing
-
-Processes webcam frames continuously using OpenCV and YOLO.
-
-Temporal Reasoning
-
-A single-frame prediction does not immediately trigger a violation.
-
-Event-Based Alerts
-
-Audio warnings are triggered only after the violation manager confirms a violation.
-
-Modular Design
-
-Detection, motion analysis, violation logic, audio, and visualization are separated into independent modules.
-
-Configurable Behavior
-
-Important system parameters can be adjusted through the central configuration file.
-
-⸻
-
-⚠️ Limitations
-
-Detection performance depends on:
-
-* Camera quality
-* Lighting conditions
-* Camera angle
-* Dataset quality
-* Model training quality
-* Object visibility
-* Detection confidence
-
-This project is intended as an AI/computer-vision research and portfolio project and should not be considered a certified automotive safety system.
-
-⸻
-
-Project
-
-GitHub: https://github.com/pranjul075/DriverSafetyAI
-
-If you find the project interesting, feel free to explore the source code and experiment with the detection and violation-management pipeline.
-
-Built with Python, YOLO, OpenCV, and a focus on practical AI engineering.
+Built with Python · YOLO11 · PyTorch · OpenCV · Pygame
