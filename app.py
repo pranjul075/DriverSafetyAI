@@ -1,23 +1,3 @@
-# app.py
-# ─────────────────────────────────────────────
-# DriverSafetyAI — Main Application
-#
-# Pipeline:
-#
-# Camera
-#   ↓
-# Motion Detection
-#   ↓
-# YOLO Detection
-#   ↓
-# Temporal Violation Confirmation
-#   ↓
-# Audio Warning
-#   ↓
-# Visualization
-#
-# Driver ROI has been removed.
-# ─────────────────────────────────────────────
 
 import cv2
 import argparse
@@ -50,10 +30,7 @@ from src.visualization import (
     draw_warning_banner
 )
 
-
-# ─────────────────────────────────────────────
 # ARGUMENTS
-# ─────────────────────────────────────────────
 
 def parse_args():
 
@@ -73,10 +50,7 @@ def parse_args():
 
     return parser.parse_args()
 
-
-# ─────────────────────────────────────────────
 # VIDEO SOURCE
-# ─────────────────────────────────────────────
 
 def open_video_source(source):
 
@@ -119,10 +93,7 @@ def open_video_source(source):
 
     return cap
 
-
-# ─────────────────────────────────────────────
 # MAIN
-# ─────────────────────────────────────────────
 
 def main():
 
@@ -134,15 +105,14 @@ def main():
 
     print("=" * 55)
 
-    # ─────────────────────────────────────
     # Parse arguments
-    # ─────────────────────────────────────
+
 
     args = parse_args()
 
-    # ─────────────────────────────────────
+   
     # 1. YOLO
-    # ─────────────────────────────────────
+   
 
     print(
         "\n[1/4] Loading YOLO model..."
@@ -150,9 +120,9 @@ def main():
 
     detector = Detector()
 
-    # ─────────────────────────────────────
+
     # 2. Motion detector
-    # ─────────────────────────────────────
+   
 
     print(
         "\n[2/4] Initializing motion detector..."
@@ -160,9 +130,8 @@ def main():
 
     motion_detector = MotionDetector()
 
-    # ─────────────────────────────────────
     # 3. Violation manager
-    # ─────────────────────────────────────
+  
 
     print(
         "\n[3/4] Initializing violation manager..."
@@ -170,9 +139,7 @@ def main():
 
     violation_manager = ViolationManager()
 
-    # ─────────────────────────────────────
-    # 4. Audio
-    # ─────────────────────────────────────
+
 
     print(
         "\n[4/4] Initializing audio alert..."
@@ -180,9 +147,6 @@ def main():
 
     audio_alert = AudioAlert()
 
-    # ─────────────────────────────────────
-    # Open camera
-    # ─────────────────────────────────────
 
     print(
         "\nOpening video source..."
@@ -212,15 +176,11 @@ def main():
 
     frame_count = 0
 
-    # ─────────────────────────────────────
-    # MAIN LOOP
-    # ─────────────────────────────────────
+
 
     while True:
 
-        # ─────────────────────────────────
-        # PAUSED
-        # ─────────────────────────────────
+
 
         if paused:
 
@@ -247,9 +207,7 @@ def main():
 
             continue
 
-        # ─────────────────────────────────
-        # READ FRAME
-        # ─────────────────────────────────
+
 
         ret, frame = cap.read()
 
@@ -264,9 +222,9 @@ def main():
 
         frame_count += 1
 
-        # ─────────────────────────────────
+
         # RESIZE
-        # ─────────────────────────────────
+
 
         frame = cv2.resize(
             frame,
@@ -276,10 +234,10 @@ def main():
             )
         )
 
-        # ─────────────────────────────────
+
         # STEP 1
         # MOTION DETECTION
-        # ─────────────────────────────────
+
 
         vehicle_moving = (
             motion_detector.update(
@@ -292,10 +250,10 @@ def main():
             .get_status_text()
         )
 
-        # ─────────────────────────────────
+
         # STEP 2
         # YOLO DETECTION
-        # ─────────────────────────────────
+
 
         detections = (
             detector.detect(frame)
@@ -305,10 +263,10 @@ def main():
         # ALL valid detections are used.
         driver_detections = detections
 
-        # ─────────────────────────────────
+
         # STEP 3
         # VIOLATION MANAGER
-        # ─────────────────────────────────
+
 
         (
             violation_state,
@@ -318,10 +276,10 @@ def main():
             vehicle_moving
         )
 
-        # ─────────────────────────────────
+
         # STEP 4
         # AUDIO WARNING
-        # ─────────────────────────────────
+
 
         if should_warn:
 
@@ -329,19 +287,19 @@ def main():
                 violation_state
             )
 
-        # ─────────────────────────────────
+
         # STEP 5
         # DRAW DETECTIONS
-        # ─────────────────────────────────
+
 
         frame = draw_detections(
             frame,
             detections
         )
 
-        # ─────────────────────────────────
+
         # STATUS PANEL
-        # ─────────────────────────────────
+
 
         frame = draw_status_panel(
             frame,
@@ -350,27 +308,27 @@ def main():
             violation_manager
         )
 
-        # ─────────────────────────────────
+
         # WARNING BANNER
-        # ─────────────────────────────────
+
 
         frame = draw_warning_banner(
             frame,
             violation_state
         )
 
-        # ─────────────────────────────────
+        
         # DISPLAY
-        # ─────────────────────────────────
+        
 
         cv2.imshow(
             "DriverSafetyAI",
             frame
         )
 
-        # ─────────────────────────────────
+
         # KEYBOARD
-        # ─────────────────────────────────
+
 
         key = (
             cv2.waitKey(1)
@@ -396,9 +354,9 @@ def main():
                 "press SPACE to resume"
             )
 
-    # ─────────────────────────────────────
+
     # CLEANUP
-    # ─────────────────────────────────────
+
 
     cap.release()
 
@@ -409,9 +367,9 @@ def main():
     )
 
 
-# ─────────────────────────────────────────────
+
 # ENTRY POINT
-# ─────────────────────────────────────────────
+
 
 if __name__ == "__main__":
 
