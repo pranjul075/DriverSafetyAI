@@ -68,3 +68,10 @@ DEFAULT_SOURCE = 0
 # Display window size
 DISPLAY_WIDTH = 1280
 DISPLAY_HEIGHT = 720
+# ── DISPLAY ────────────────────────────────────
+# Window title
+WINDOW_TITLE = "DriverSafetyAI - Real Time Driver Safety System"
+
+# Font scale for overlay text
+FONT_SCALE = 0.6
+FONT_THICKNESS = 2
