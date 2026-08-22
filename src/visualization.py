@@ -1,7 +1,6 @@
-# src/visualization.py
-# ─────────────────────────────────────────────
+
 # DriverSafetyAI — Visualization
-# ─────────────────────────────────────────────
+
 
 import cv2
 
@@ -23,9 +22,9 @@ from src.violation_manager import (
 )
 
 
-# ─────────────────────────────────────────────
+
 # DETECTION BOXES
-# ─────────────────────────────────────────────
+
 
 def draw_detections(
     frame,
@@ -136,9 +135,7 @@ def draw_detections(
     return frame
 
 
-# ─────────────────────────────────────────────
-# STATUS PANEL
-# ─────────────────────────────────────────────
+
 
 def draw_status_panel(
     frame,
@@ -233,9 +230,7 @@ def draw_status_panel(
     return frame
 
 
-# ─────────────────────────────────────────────
-# WARNING BANNER
-# ─────────────────────────────────────────────
+
 
 def draw_warning_banner(
     frame,
