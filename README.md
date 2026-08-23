@@ -40,12 +40,8 @@ The system does not trigger on a single frame. A violation must persist continuo
 *  Temporal Violation Confirmation — Requires a detection to persist before confirming a violation
 *  Vehicle Motion Detection — Uses optical-flow-based motion analysis to determine vehicle movement
 *  Real-Time Audio Alerts — Plays warning sounds for confirmed violations
-*  Violation State Management — Supports individual and combined violation states
 *  False-Positive Reduction — Uses confidence filtering, temporal confirmation, and warning cooldowns
 *  Live Detection Visualization — Displays bounding boxes, labels, confidence scores, and system status
-*  Centralized Configuration — Detection and system parameters are managed through config/config.py
-*  Modular Python Architecture — Detection, motion analysis, violation management, audio, and visualization are separated into       independent modules
-
 ---
 
 ## Violation States
